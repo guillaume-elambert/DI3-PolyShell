@@ -1,0 +1,54 @@
+#!/bin/bash
+set -e
+config=$HOME/.config/polyshell
+architecture=$(uname -m)
+URL="https://teaching.bocqfamily.fr/c"
+function print {
+	for message in "$@"
+	do
+		echo $message
+	done
+}
+function quit {
+	print "$@"
+	exit 1
+}
+function prerequisite {
+	if ! command -v $1 >/dev/null 2>&1
+	then
+		quit "Please install $1 first."
+	fi
+}
+function getdata {
+	# $1 file name
+	# $2 nice name
+	if [[ -r $config/$1 ]]
+	then
+		retval=$(cat $config/$1)
+	elif [[ -z $PS1 ]]
+	then
+		prerequisite curl
+		echo -n "What is your $2? $2=" && read retval
+	else
+		quit "Interactive shell required." "Abort."
+	fi
+}
+function start {
+	getdata user username
+	user=$retval
+	getdata pass password
+	pass=$retval
+}
+function end {
+	if ! [[ -z ${user+x} ]] && ! [[ -z ${pass+x} ]]
+	then
+		mkdir -p $config/
+		echo -n $user > $config/user
+		echo -n $pass > $config/pass
+	fi
+	if ! [[ -z ${mail+x} ]]
+	then
+		mkdir -p $config/
+		echo -n $mail > $config/mail
+	fi
+}
